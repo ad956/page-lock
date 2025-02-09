@@ -1,33 +1,46 @@
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+# Page-Lock 🛡️
 
-## Getting Started
+Page-Lock is a simple Chrome extension that prevents access to specific websites by requiring a password before opening them. It helps you stay focused and in control of your browsing habits.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-pnpm dev
-# or
-npm run dev
-```
+- 🔒 **Password-Protected Access** – Users must enter a password to visit blocked sites.
+- 🛑 **Site Blocking** – Add websites to the block list to prevent instant access.
+- ⚙️ **Customizable Password** – Easily set or update the password from the extension popup.
+- 📂 **Secure Storage** – Stores passwords safely using Chrome's local storage.
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+## 📦 Installation
 
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/ad956/page-lock.git
+   cd page-lock
+   ```
+2. Install dependencies:
+   ```sh
+   pnpm install
+   ```
+3. Run the development server:
+   ```sh
+   pnpm run dev
+   ```
+4. Open **chrome://extensions** in your browser.
+5. Enable **Developer Mode** (toggle in the top-right corner).
+6. Click **Load Unpacked** and select the `dist` folder.
 
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
+<!-- ## 🛠️ Usage
 
-## Making production build
+1. Click on the **Page-Lock** extension icon in Chrome.
+2. Set a password in the popup.
+3. Try visiting a blocked site (e.g., `facebook.com`, `youtube.com`).
+4. Enter the correct password to unlock access. -->
 
-Run the following:
+## 🏗️ Tech Stack
 
-```bash
-pnpm build
-# or
-npm run build
-```
+- **Plasmo**
+- **TypeScript**
+- **Tailwind CSS**
 
-This should create a production bundle for your extension, ready to be zipped and published to the stores.
+---
 
-## Submit to the webstores
-
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+Made with ❤️ by [ad956](https://github.com/ad956)
