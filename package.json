@@ -1,8 +1,8 @@
 {
   "name": "page-lock",
   "displayName": "Page lock",
-  "version": "0.0.1",
-  "description": "A basic Plasmo extension.",
+  "version": "1.0.0",
+  "description": "Page-Lock is a simple Chrome extension that prevents access to specific websites.",
   "author": "ad956",
   "scripts": {
     "dev": "plasmo dev",
@@ -24,8 +24,28 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "manifest_version": 3,
+    "permissions": [
+      "storage",
+      "tabs",
+      "webNavigation"
+    ],
+    "background": {
+      "service_worker": "./background.ts"
+    },
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "password.html",
+          "password.js"
+        ],
+        "matches": [
+          "<all_urls>"
+        ]
+      }
+    ],
     "host_permissions": [
-      "https://*/*"
+      "<all_urls>"
     ]
   }
 }
