@@ -21,9 +21,13 @@ jobs:
           pnpm install  
           pnpm run build
 
+      - name: Rename folder before zipping
+        run: |
+          mv ./build/chrome-mv3-prod ./build/my-extension-folder
+
       - name: Create .zip package
         run: |
-          zip -r plasmo-extension.zip ./build/*
+          zip -r plasmo-extension.zip ./build/my-extension-folder/*
 
       - name: Create GitHub Release and Upload .zip
         uses: softprops/action-gh-release@v2.2.1
