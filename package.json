@@ -2,7 +2,7 @@
   "name": "page-lock",
   "displayName": "Page lock",
   "version": "1.0.0",
-  "description": "Page-Lock is a simple Chrome extension that prevents access to specific websites.",
+  "description": "Page-Lock is a simple Chrome extension that allows users to set passwords for specific websites, preventing access without authentication.",
   "author": "ad956",
   "scripts": {
     "dev": "plasmo dev",
