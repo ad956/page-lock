@@ -7,12 +7,23 @@ import { secureGet } from "~utils/crypto"
 
 import "../style.css"
 
+import { Alert } from "../alert"
+
 const storage = new Storage()
 
 const PasswordPage = () => {
   const [password, setPassword] = useState("")
   const [shake, setShake] = useState(false)
   const [returnUrl, setReturnUrl] = useState("")
+  const [alert, setAlert] = useState<{
+    show: boolean
+    message: string
+    type: "error" | "success"
+  }>({
+    show: false,
+    message: "",
+    type: "error"
+  })
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -41,11 +52,22 @@ const PasswordPage = () => {
       setShake(true)
       setTimeout(() => setShake(false), 500)
       setPassword("")
+      setAlert({
+        show: true,
+        message: "Incorrect password!",
+        type: "error"
+      })
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+      <Alert
+        message={alert.message}
+        type={alert.type}
+        isVisible={alert.show}
+        onClose={() => setAlert((prev) => ({ ...prev, show: false }))}
+      />
       <div
         className={`max-w-md w-full space-y-8 p-8 bg-gray-800 rounded-xl shadow-2xl border border-purple-500/20 backdrop-blur-sm transform transition-all duration-300 hover:shadow-purple-500/5 ${
           shake ? "animate-shake" : ""
