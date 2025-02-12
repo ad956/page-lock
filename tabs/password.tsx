@@ -1,9 +1,11 @@
 import { Key, Lock, Shield } from "lucide-react"
 import { useState } from "react"
 
-import "../style.css"
-
 import { Storage } from "@plasmohq/storage"
+
+import { secureGet } from "~utils/crypto"
+
+import "../style.css"
 
 const storage = new Storage()
 
@@ -12,15 +14,24 @@ const PasswordPage = () => {
   const [shake, setShake] = useState(false)
 
   const handleSubmit = async () => {
-    const storedPassword = await storage.get<string>("siteLockPassword")
+    const storedPassword = await secureGet("siteLockPassword")
 
     if (password === storedPassword) {
-      // Close the tab and return to original URL
-      window.close()
+      await storage.set(
+        "passwordSession",
+        JSON.stringify({
+          timestamp: Date.now()
+        })
+      )
+
+      // Get the original URL from storage
+      const originalUrl = await storage.get("og-url")
+
+      window.location.href = originalUrl
     } else {
       setShake(true)
       setTimeout(() => setShake(false), 500)
-      alert("Incorrect password!")
+      setPassword("")
     }
   }
 
