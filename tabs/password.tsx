@@ -1,5 +1,5 @@
 import { Key, Lock, Shield } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Storage } from "@plasmohq/storage"
 
@@ -12,6 +12,17 @@ const storage = new Storage()
 const PasswordPage = () => {
   const [password, setPassword] = useState("")
   const [shake, setShake] = useState(false)
+  const [returnUrl, setReturnUrl] = useState("")
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const encodedReturnUrl = params.get("returnUrl")
+    if (encodedReturnUrl) {
+      // Decode the URL
+      const decodedUrl = decodeURIComponent(encodedReturnUrl)
+      setReturnUrl(decodedUrl)
+    }
+  }, [])
 
   const handleSubmit = async () => {
     const storedPassword = await secureGet("siteLockPassword")
@@ -24,10 +35,8 @@ const PasswordPage = () => {
         })
       )
 
-      // Get the original URL from storage
-      const originalUrl = await storage.get("og-url")
-
-      window.location.href = originalUrl
+      // Redirect to return URL
+      window.location.href = returnUrl ? returnUrl : "/"
     } else {
       setShake(true)
       setTimeout(() => setShake(false), 500)
