@@ -1,0 +1,31 @@
+name: Build and Release Extension
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm and dependencies, build extension
+        run: |
+          npm install -g pnpm  
+          pnpm install  
+          pnpm run build
+
+      - name: Create .zip package
+        run: |
+          zip -r plasmo-extension.zip ./build/*
+
+      - name: Create GitHub Release and Upload .zip
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          files: plasmo-extension.zip
