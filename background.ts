@@ -1,23 +1,22 @@
-chrome.webNavigation.onBeforeNavigate.addListener(
-  async (details) => {
-    const blockedSites = ["facebook.com"]
-    const url = new URL(details.url)
+import { Storage } from "@plasmohq/storage"
 
-    if (blockedSites.some((site) => url.hostname.includes(site))) {
-      try {
-        const { siteLockPassword } =
-          await chrome.storage.local.get("siteLockPassword")
+const storage = new Storage()
 
-        if (!siteLockPassword) {
-          // Redirect to password page if no password is set
-          chrome.tabs.update(details.tabId, {
-            url: chrome.runtime.getURL("password.html")
-          })
-        }
-      } catch (error) {
-        console.error("Error getting password from storage:", error)
-      }
+chrome.action.onClicked.addListener(() => {
+  chrome.runtime.openOptionsPage()
+})
+
+chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
+  const blockedSites = (await storage.get<string[]>("blockedSites")) || []
+  const url = new URL(details.url)
+
+  if (blockedSites.some((site) => url.hostname.includes(site))) {
+    const siteLockPassword = await storage.get<string>("siteLockPassword")
+
+    if (!siteLockPassword) {
+      chrome.tabs.update(details.tabId, {
+        url: chrome.runtime.getURL("tabs/password.html")
+      })
     }
-  },
-  { url: [{ hostContains: "facebook.com" }] }
-)
+  }
+})
