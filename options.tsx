@@ -7,6 +7,8 @@ import "./style.css"
 
 import { normalizeUrl } from "~utils/normalizeUrl"
 
+import { Alert } from "./alert"
+
 const Options = () => {
   const [hasPassword, setHasPassword] = useState(false)
   const [newPassword, setNewPassword] = useState("")
@@ -14,6 +16,15 @@ const Options = () => {
   const [resetPassword, setResetPassword] = useState("")
   const [blockedSite, setBlockedSite] = useState("")
   const [blockedSites, setBlockedSites] = useState<string[]>([])
+  const [alert, setAlert] = useState<{
+    show: boolean
+    message: string
+    type: "error" | "success"
+  }>({
+    show: false,
+    message: "",
+    type: "success"
+  })
 
   useEffect(() => {
     loadInitialData()
@@ -28,13 +39,21 @@ const Options = () => {
 
   const handleSetPassword = async () => {
     if (!newPassword) {
-      alert("Please enter a password")
+      setAlert({
+        show: true,
+        message: "Please enter a password",
+        type: "error"
+      })
       return
     }
     await secureStore("siteLockPassword", newPassword)
     setHasPassword(true)
     setNewPassword("")
-    alert("Password Saved!")
+    setAlert({
+      show: true,
+      message: "Password saved successfully!",
+      type: "success"
+    })
   }
 
   const handleResetPassword = async () => {
@@ -43,15 +62,27 @@ const Options = () => {
       await secureStore("siteLockPassword", resetPassword)
       setOldPassword("")
       setResetPassword("")
-      alert("Password Reset Successfully!")
+      setAlert({
+        show: true,
+        message: "Password reset successfully!",
+        type: "success"
+      })
     } else {
-      alert("Incorrect Old Password!")
+      setAlert({
+        show: true,
+        message: "Incorrect old password!",
+        type: "error"
+      })
     }
   }
 
   const handleAddSite = async () => {
     if (!blockedSite) {
-      alert("Please enter a site URL")
+      setAlert({
+        show: true,
+        message: "Please enter a site URL",
+        type: "error"
+      })
       return
     }
 
@@ -69,7 +100,11 @@ const Options = () => {
       setBlockedSites(updatedSites)
       setBlockedSite("")
     } else {
-      alert("This site is already blocked!")
+      setAlert({
+        show: true,
+        message: "Site removed successfully!",
+        type: "success"
+      })
     }
   }
 
@@ -81,6 +116,12 @@ const Options = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12">
+      <Alert
+        message={alert.message}
+        type={alert.type}
+        isVisible={alert.show}
+        onClose={() => setAlert((prev) => ({ ...prev, show: false }))}
+      />
       <div className="max-w-2xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8 border border-purple-500/20">
         <div className="flex items-center space-x-4 mb-8">
           <div className="p-3 bg-purple-500/10 rounded-full ring-1 ring-purple-500/20">
