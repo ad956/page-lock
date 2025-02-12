@@ -11,24 +11,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Add memory configuration to prevent segmentation fault
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install pnpm and dependencies, build extension
-        run: |
-          npm install 
-          npm run build
-
-      - name: Rename folder before zipping
-        run: |
-          mv ./build/chrome-mv3-prod ./build/my-extension-folder
-
-      - name: Create .zip package
-        run: |
-          zip -r plasmo-extension.zip ./build/my-extension-folder/*
-
-      - name: Create GitHub Release and Upload .zip
-        uses: softprops/action-gh-release@v2.2.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          files: plasmo-extension.zip
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build and package extension
+        run: pnpm build --zip
+
+      - name: Prepare artifact
+        run: |
+          mkdir release
+          mv build/chrome-mv3-prod.zip release/plasmo-extension.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: release/plasmo-extension.zip
