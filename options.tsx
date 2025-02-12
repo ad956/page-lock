@@ -1,13 +1,14 @@
 import { Globe, Key, Lock, Plus, RefreshCw, Save, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 
+import { secureGet, secureStore } from "~utils/crypto"
+
 import "./style.css"
 
-import { Storage } from "@plasmohq/storage"
-
-const storage = new Storage()
+import { normalizeUrl } from "~utils/normalizeUrl"
 
 const Options = () => {
+  const [hasPassword, setHasPassword] = useState(false)
   const [newPassword, setNewPassword] = useState("")
   const [oldPassword, setOldPassword] = useState("")
   const [resetPassword, setResetPassword] = useState("")
@@ -15,11 +16,13 @@ const Options = () => {
   const [blockedSites, setBlockedSites] = useState<string[]>([])
 
   useEffect(() => {
-    loadBlockedSites()
+    loadInitialData()
   }, [])
 
-  const loadBlockedSites = async () => {
-    const sites = (await storage.get<string[]>("blockedSites")) || []
+  const loadInitialData = async () => {
+    const existingPassword = await secureGet("siteLockPassword")
+    setHasPassword(!!existingPassword)
+    const sites = (await secureGet("blockedSites")) || []
     setBlockedSites(sites)
   }
 
@@ -28,15 +31,16 @@ const Options = () => {
       alert("Please enter a password")
       return
     }
-    await storage.set("siteLockPassword", newPassword)
+    await secureStore("siteLockPassword", newPassword)
+    setHasPassword(true)
     setNewPassword("")
     alert("Password Saved!")
   }
 
   const handleResetPassword = async () => {
-    const currentPassword = await storage.get<string>("siteLockPassword")
+    const currentPassword = await secureGet("siteLockPassword")
     if (oldPassword === currentPassword) {
-      await storage.set("siteLockPassword", resetPassword)
+      await secureStore("siteLockPassword", resetPassword)
       setOldPassword("")
       setResetPassword("")
       alert("Password Reset Successfully!")
@@ -50,18 +54,28 @@ const Options = () => {
       alert("Please enter a site URL")
       return
     }
-    const sites = (await storage.get<string[]>("blockedSites")) || []
-    if (!sites.includes(blockedSite)) {
-      const updatedSites = [...sites, blockedSite]
-      await storage.set("blockedSites", updatedSites)
+
+    // Normalize the URL before saving
+    const normalizedUrl = normalizeUrl(blockedSite)
+
+    // Check if site is already blocked
+    const exists = blockedSites.some(
+      (site) => normalizeUrl(site) === normalizedUrl
+    )
+
+    if (!exists) {
+      const updatedSites = [...blockedSites, normalizedUrl]
+      await secureStore("blockedSites", updatedSites)
       setBlockedSites(updatedSites)
       setBlockedSite("")
+    } else {
+      alert("This site is already blocked!")
     }
   }
 
   const handleRemoveSite = async (siteToRemove: string) => {
     const updatedSites = blockedSites.filter((site) => site !== siteToRemove)
-    await storage.set("blockedSites", updatedSites)
+    await secureStore("blockedSites", updatedSites)
     setBlockedSites(updatedSites)
   }
 
@@ -76,56 +90,58 @@ const Options = () => {
         </div>
 
         <div className="space-y-8">
-          <section className="space-y-4 transform transition-all duration-300 hover:scale-[1.01]">
-            <h2 className="text-xl font-semibold flex items-center space-x-2 text-white">
-              <Key className="w-5 h-5 text-purple-400" />
-              <span>Set Lock Password</span>
-            </h2>
-            <div className="space-y-3">
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter New Password"
-                className="w-full p-3 bg-gray-900/50 text-white border border-purple-500/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
-              />
-              <button
-                onClick={handleSetPassword}
-                className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/20">
-                <Save className="w-5 h-5" />
-                <span>Save Password</span>
-              </button>
-            </div>
-          </section>
-
-          <section className="space-y-4 transform transition-all duration-300 hover:scale-[1.01]">
-            <h2 className="text-xl font-semibold flex items-center space-x-2 text-white">
-              <RefreshCw className="w-5 h-5 text-purple-400" />
-              <span>Reset Password</span>
-            </h2>
-            <div className="space-y-3">
-              <input
-                type="password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                placeholder="Enter Old Password"
-                className="w-full p-3 bg-gray-900/50 text-white border border-purple-500/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
-              />
-              <input
-                type="password"
-                value={resetPassword}
-                onChange={(e) => setResetPassword(e.target.value)}
-                placeholder="Enter New Password"
-                className="w-full p-3 bg-gray-900/50 text-white border border-purple-500/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
-              />
-              <button
-                onClick={handleResetPassword}
-                className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/20">
-                <Key className="w-5 h-5" />
+          {!hasPassword ? (
+            <section className="space-y-4 transform transition-all duration-300 hover:scale-[1.01]">
+              <h2 className="text-xl font-semibold flex items-center space-x-2 text-white">
+                <Key className="w-5 h-5 text-purple-400" />
+                <span>Set Lock Password</span>
+              </h2>
+              <div className="space-y-3">
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter New Password"
+                  className="w-full p-3 bg-gray-900/50 text-white border border-purple-500/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
+                />
+                <button
+                  onClick={handleSetPassword}
+                  className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/20">
+                  <Save className="w-5 h-5" />
+                  <span>Save Password</span>
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className="space-y-4 transform transition-all duration-300 hover:scale-[1.01]">
+              <h2 className="text-xl font-semibold flex items-center space-x-2 text-white">
+                <RefreshCw className="w-5 h-5 text-purple-400" />
                 <span>Reset Password</span>
-              </button>
-            </div>
-          </section>
+              </h2>
+              <div className="space-y-3">
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="Enter Old Password"
+                  className="w-full p-3 bg-gray-900/50 text-white border border-purple-500/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
+                />
+                <input
+                  type="password"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  placeholder="Enter New Password"
+                  className="w-full p-3 bg-gray-900/50 text-white border border-purple-500/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
+                />
+                <button
+                  onClick={handleResetPassword}
+                  className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/20">
+                  <Key className="w-5 h-5" />
+                  <span>Reset Password</span>
+                </button>
+              </div>
+            </section>
+          )}
 
           <section className="space-y-4 transform transition-all duration-300 hover:scale-[1.01]">
             <h2 className="text-xl font-semibold flex items-center space-x-2 text-white">
