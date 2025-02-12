@@ -17,9 +17,8 @@ jobs:
 
       - name: Install pnpm and dependencies, build extension
         run: |
-          npm install -g pnpm  
-          pnpm install --frozen-lockfile
-          pnpm run build
+          npm install 
+          npm run build
 
       - name: Rename folder before zipping
         run: |
