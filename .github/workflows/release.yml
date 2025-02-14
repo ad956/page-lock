@@ -19,10 +19,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm shrinkwrap  # This creates a lock file for future runs
 
       - name: Build and package extension
         run: npm run build --zip --max-workers=3
