@@ -15,17 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: latest
-          run_install: true
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "pnpm"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
         run: pnpm install
@@ -43,3 +40,14 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: release/plasmo-extension.zip
+
+      # Add debugging step to capture logs if build fails
+      - name: Debugging Information
+        if: failure()
+        run: |
+          echo "Node Version:"
+          node --version
+          echo "PNPM Version:"
+          pnpm --version
+          echo "Installed Packages:"
+          pnpm list --depth=0
