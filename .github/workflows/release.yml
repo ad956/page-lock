@@ -26,25 +26,15 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
-      # Added memory management
-      - name: Configure node options
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          echo "NODE_OPTIONS=${NODE_OPTIONS}" >> $GITHUB_ENV
-
       - name: Install dependencies
-        run: |
-          pnpm store prune
-          pnpm install --no-frozen-lockfile
+        run: pnpm install
 
       - name: Build and package extension
-        run: pnpm build --zip
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm build --zip --max-workers=3
 
       - name: Prepare artifact
         run: |
-          mkdir -p release
+          mkdir release
           mv build/chrome-mv3-prod.zip release/plasmo-extension.zip
 
       - name: Create GitHub Release
