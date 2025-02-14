@@ -15,6 +15,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3-dev gcc g++ make
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -22,11 +27,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
-          npm shrinkwrap  # This creates a lock file for future runs
-
-      - name: Build and package extension
-        run: npm run build --zip --max-workers=3
+          npm install --build-from-source
+          npm run build -- --zip --max-workers=3
 
       - name: Prepare artifact
         run: |
